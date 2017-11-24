@@ -24,3 +24,16 @@ _testmain.go
 *.prof
 
 .idea
+
+logic/logic
+logic/logic.conf
+
+logic/job/job
+logic/job/job.conf
+
+router/router
+router/router.conf
+
+comet/comet
+comet/comet.conf
+
