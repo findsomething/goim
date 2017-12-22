@@ -1,0 +1,762 @@
+@startuml
+namespace goim\\benchmark\\client {
+ class Proto {
+  PackLen int32
+  HeaderLen int16
+  Ver int16
+  Operation int32
+  SeqId int32
+  Body []byte
+} 
+}
+namespace goim\\benchmark\\multi_push {
+ class pushsBodyMsg {
+  Msg json.RawMessage
+  UserIds []int64
+} 
+}
+namespace goim\\benchmark\\push {
+ class pushBodyMsg {
+  Msg json.RawMessage
+  UserId int64
+} 
+}
+namespace goim\\benchmark\\push_rooms {
+ class pushBodyMsg {
+  Msg json.RawMessage
+  UserId int64
+} 
+}
+namespace goim\\comet {
+ class BucketOptions {
+  ChannelSize int
+  RoomSize int
+  RoutineAmount int64
+  RoutineSize int
+} 
+}
+namespace goim\\comet {
+ class Bucket {
+  cLock sync.RWMutex
+  chs map[string]*Channel
+  boptions BucketOptions
+  rooms map[int32]*Room
+  routines []chan *proto.BoardcastRoomArg
+  routinesNum uint64
+} 
+}
+namespace goim\\comet {
+ class Channel {
+  RoomId int32
+  CliProto Ring
+  signal chan *proto.Proto
+  Writer bufio.Writer
+  Reader bufio.Reader
+  Next *Channel
+  Prev *Channel
+} 
+}
+namespace goim\\comet\\client {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  CertFile string
+  TCPAddr string
+  WebsocketAddr string
+  Sndbuf int
+  Rcvbuf int
+  Type int
+  SubKey string
+} 
+}
+namespace goim\\comet\\client {
+ class Proto {
+  Ver int16
+  Operation int32
+  SeqId int32
+  Body json.RawMessage
+} 
+}
+namespace goim\\comet {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  PprofBind []string
+  StatBind []string
+  ServerId int32
+  Debug bool
+  Whitelist []string
+  WhiteLog string
+  TCPBind []string
+  TCPSndbuf int
+  TCPRcvbuf int
+  TCPKeepalive bool
+  TCPReader int
+  TCPReadBuf int
+  TCPReadBufSize int
+  TCPWriter int
+  TCPWriteBuf int
+  TCPWriteBufSize int
+  WebsocketBind []string
+  WebsocketTLSOpen bool
+  WebsocketTLSBind []string
+  WebsocketCertFile string
+  WebsocketPrivateFile string
+  FlashPolicyOpen bool
+  FlashPolicyBind []string
+  HandshakeTimeout time.Duration
+  WriteTimeout time.Duration
+  SvrProto int
+  CliProto int
+  Timer int
+  TimerSize int
+  Bucket int
+  BucketChannel int
+  BucketRoom int
+  RoutineAmount int64
+  RoutineSize int
+  RPCPushAddrs []string
+  LogicAddrs []string
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\comet {
+ class Monitor {
+} 
+}
+namespace goim\\comet {
+ class DefaultOperator {
+} 
+}
+namespace goim\\comet {
+ class Ring {
+  rp uint64
+  num uint64
+  mask uint64
+  wp uint64
+  data []proto.Proto
+} 
+}
+namespace goim\\comet {
+ class Room {
+  id int32
+  rLock sync.RWMutex
+  next *Channel
+  drop bool
+  Online int
+} 
+}
+namespace goim\\comet {
+ class RoundOptions {
+  Timer int
+  TimerSize int
+  Reader int
+  ReadBuf int
+  ReadBufSize int
+  Writer int
+  WriteBuf int
+  WriteBufSize int
+} 
+}
+namespace goim\\comet {
+ class Round {
+  readers []bytes.Pool
+  writers []bytes.Pool
+  timers []time.Timer
+  options RoundOptions
+  readerIdx int
+  writerIdx int
+  timerIdx int
+} 
+}
+namespace goim\\comet {
+ class PushRPC {
+} 
+}
+namespace goim\\comet {
+ class ServerOptions {
+  CliProto int
+  SvrProto int
+  HandshakeTimeout time.Duration
+  TCPKeepalive bool
+  TCPRcvbuf int
+  TCPSndbuf int
+} 
+}
+namespace goim\\comet {
+ class Server {
+  Buckets []*Bucket
+  bucketIdx uint32
+  round *Round
+  operator Operator
+  Options ServerOptions
+} 
+}
+namespace goim\\comet {
+ class Whitelist {
+  Log *log.Logger
+  list map[string]struct { }
+} 
+}
+namespace goim\\libs\\bufio {
+ class Reader {
+  buf []byte
+  rd io.Reader
+  r,w int
+  err error
+} 
+}
+namespace goim\\libs\\bufio {
+ class Writer {
+  err error
+  buf []byte
+  n int
+  wr io.Writer
+} 
+}
+namespace goim\\libs\\bytes {
+ class Buffer {
+  buf []byte
+  next *Buffer
+} 
+}
+namespace goim\\libs\\bytes {
+ class Pool {
+  lock sync.Mutex
+  free *Buffer
+  max int
+  num int
+  size int
+} 
+}
+namespace goim\\libs\\bytes {
+ class Writer {
+  n int
+  buf []byte
+} 
+}
+namespace goim\\libs\\crypto\\cipher {
+ class ecb {
+  b cipher.Block
+  blockSize int
+} 
+}
+namespace goim\\libs\\crypto\\padding {
+ class pkcs5 {
+} 
+}
+namespace goim\\libs\\encoding\\binary {
+ class bigEndian {
+} 
+}
+namespace goim\\libs\\hash\\ketama {
+ class node {
+  node string
+  hash uint
+} 
+}
+namespace goim\\libs\\hash\\ketama {
+ class HashRing {
+  defaultSpots int
+  ticks tickArray
+  length int
+} 
+}
+namespace goim\\libs\\net\\xrpc {
+ class ClientOptions {
+  Proto string
+  Addr string
+} 
+}
+namespace goim\\libs\\net\\xrpc {
+ class Client {
+  *rpc.Client
+  options ClientOptions
+  quit chan struct { }
+  err error
+} 
+}
+namespace goim\\libs\\net\\xrpc {
+ class Clients {
+  clients []*Client
+} 
+}
+namespace goim\\libs\\proto {
+ class NoArg {
+} 
+}
+namespace goim\\libs\\proto {
+ class NoReply {
+} 
+}
+namespace goim\\libs\\proto {
+ class PushMsgArg {
+  Key string
+  P Proto
+} 
+}
+namespace goim\\libs\\proto {
+ class PushMsgsArg {
+  Key string
+  PMArgs []*PushMsgArg
+} 
+}
+namespace goim\\libs\\proto {
+ class PushMsgsReply {
+  Index int32
+} 
+}
+namespace goim\\libs\\proto {
+ class MPushMsgArg {
+  Keys []string
+  P Proto
+} 
+}
+namespace goim\\libs\\proto {
+ class MPushMsgReply {
+  Index int32
+} 
+}
+namespace goim\\libs\\proto {
+ class MPushMsgsArg {
+  PMArgs []*PushMsgArg
+} 
+}
+namespace goim\\libs\\proto {
+ class MPushMsgsReply {
+  Index int32
+} 
+}
+namespace goim\\libs\\proto {
+ class BoardcastArg {
+  P Proto
+} 
+}
+namespace goim\\libs\\proto {
+ class BoardcastRoomArg {
+  RoomId int32
+  P Proto
+} 
+}
+namespace goim\\libs\\proto {
+ class RoomsReply {
+  RoomIds map[int32]struct { }
+} 
+}
+namespace goim\\libs\\proto {
+ class KafkaMsg {
+  OP string
+  RoomId int32
+  ServerId int32
+  SubKeys []string
+  Msg []byte
+  Ensure bool
+} 
+}
+namespace goim\\libs\\proto {
+ class ConnArg {
+  Token string
+  Server int32
+} 
+}
+namespace goim\\libs\\proto {
+ class ConnReply {
+  Key string
+  RoomId int32
+} 
+}
+namespace goim\\libs\\proto {
+ class DisconnArg {
+  Key string
+  RoomId int32
+} 
+}
+namespace goim\\libs\\proto {
+ class DisconnReply {
+  Has bool
+} 
+}
+namespace goim\\libs\\proto {
+ class Proto {
+  Ver int16
+  Operation int32
+  SeqId int32
+  Body json.RawMessage
+} 
+}
+namespace goim\\libs\\proto {
+ class PutArg {
+  UserId int64
+  Server int32
+  RoomId int32
+} 
+}
+namespace goim\\libs\\proto {
+ class PutReply {
+  Seq int32
+} 
+}
+namespace goim\\libs\\proto {
+ class DelArg {
+  UserId int64
+  Seq int32
+  RoomId int32
+} 
+}
+namespace goim\\libs\\proto {
+ class DelReply {
+  Has bool
+} 
+}
+namespace goim\\libs\\proto {
+ class DelServerArg {
+  Server int32
+} 
+}
+namespace goim\\libs\\proto {
+ class GetArg {
+  UserId int64
+} 
+}
+namespace goim\\libs\\proto {
+ class GetReply {
+  Seqs []int32
+  Servers []int32
+} 
+}
+namespace goim\\libs\\proto {
+ class GetAllReply {
+  UserIds []int64
+  Sessions []*GetReply
+} 
+}
+namespace goim\\libs\\proto {
+ class MGetArg {
+  UserIds []int64
+} 
+}
+namespace goim\\libs\\proto {
+ class MGetReply {
+  UserIds []int64
+  Sessions []*GetReply
+} 
+}
+namespace goim\\libs\\proto {
+ class CountReply {
+  Count int32
+} 
+}
+namespace goim\\libs\\proto {
+ class RoomCountArg {
+  RoomId int32
+} 
+}
+namespace goim\\libs\\proto {
+ class RoomCountReply {
+  Count int32
+} 
+}
+namespace goim\\libs\\proto {
+ class AllRoomCountReply {
+  Counter map[int32]int32
+} 
+}
+namespace goim\\libs\\proto {
+ class AllServerCountReply {
+  Counter map[int32]int32
+} 
+}
+namespace goim\\libs\\proto {
+ class UserCountArg {
+  UserId int64
+} 
+}
+namespace goim\\libs\\proto {
+ class UserCountReply {
+  Count int32
+} 
+}
+namespace goim\\libs\\time {
+ class TimerData {
+  Key string
+  expire itime.Time
+  fn func()
+  index int
+  next *TimerData
+} 
+}
+namespace goim\\libs\\time {
+ class Timer {
+  lock sync.Mutex
+  free *TimerData
+  timers []*TimerData
+  signal *itime.Timer
+  num int
+} 
+}
+namespace goim\\logic {
+ class DefaultAuther {
+} 
+}
+namespace goim\\logic {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  PprofAddrs []string
+  RPCAddrs []string
+  HTTPAddrs []string
+  HTTPReadTimeout time.Duration
+  HTTPWriteTimeout time.Duration
+  RouterRPCAddrs map[string]string
+  KafkaAddrs []string
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\logic {
+ class pushsBodyMsg {
+  Msg json.RawMessage
+  UserIds []int64
+} 
+}
+namespace goim\\logic {
+ class RoomCounter {
+  RoomId int32
+  Count int32
+} 
+}
+namespace goim\\logic {
+ class ServerCounter {
+  Server int32
+  Count int32
+} 
+}
+namespace goim\\logic\\job {
+ class CometOptions {
+  RoutineSize int64
+  RoutineChan int
+} 
+}
+namespace goim\\logic\\job {
+ class Comet {
+  serverId int32
+  rpcClient *xrpc.Clients
+  pushRoutines []chan *proto.MPushMsgArg
+  broadcastRoutines []chan *proto.BoardcastArg
+  roomRoutines []chan *proto.BoardcastRoomArg
+  pushRoutinesNum int64
+  roomRoutinesNum int64
+  broadcastRoutinesNum int64
+  options CometOptions
+} 
+}
+namespace goim\\logic\\job {
+ class Config {
+  Log string
+  ZKAddrs []string
+  ZKRoot string
+  KafkaTopic string
+  Comets map[int32]string
+  RoutineSize int64
+  RoutineChan int
+  PushChan int
+  PushChanSize int
+  Timer int
+  TimerSize int
+  RoomBatch int
+  RoomSignal time.Duration
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\logic\\job {
+ class Monitor {
+} 
+}
+namespace goim\\logic\\job {
+ class pushArg {
+  ServerId int32
+  SubKeys []string
+  Msg []byte
+  RoomId int32
+} 
+}
+namespace goim\\logic\\job {
+ class RoomBucket {
+  roomNum int
+  rooms map[int32]*Room
+  rwLock sync.RWMutex
+  options RoomOptions
+  round *Round
+} 
+}
+namespace goim\\logic\\job {
+ class RoomOptions {
+  BatchNum int
+  SignalTime time.Duration
+} 
+}
+namespace goim\\logic\\job {
+ class Room {
+  id int32
+  proto chan *proto.Proto
+} 
+}
+namespace goim\\logic\\job {
+ class RoundOptions {
+  Timer int
+  TimerSize int
+} 
+}
+namespace goim\\logic\\job {
+ class Round {
+  timers []time.Timer
+  options RoundOptions
+  timerIdx int
+} 
+}
+namespace goim\\logic {
+ class Monitor {
+} 
+}
+namespace goim\\logic {
+ class RPC {
+  auther Auther
+} 
+}
+namespace goim\\router {
+ class Bucket {
+  bLock sync.RWMutex
+  server int
+  session int
+  sessions map[int64]*Session
+  roomCounter map[int32]int32
+  serverCounter map[int32]int32
+  userServerCounter map[int32]map[int64]int32
+  cleaner *Cleaner
+} 
+}
+namespace goim\\router {
+ class CleanData {
+  Key int64
+  expireTime time.Time
+  next,prev *CleanData
+} 
+}
+namespace goim\\router {
+ class Cleaner {
+  cLock sync.Mutex
+  size int
+  root CleanData
+  maps map[int64]*CleanData
+} 
+}
+namespace goim\\router {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  PprofAddrs []string
+  RPCAddrs []string
+  Bucket int
+  Server int
+  Cleaner int
+  BucketCleanPeriod time.Duration
+  Session int
+  SessionExpire time.Duration
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\router {
+ class Monitor {
+} 
+}
+namespace goim\\router {
+ class RouterRPC {
+  Buckets []*Bucket
+  BucketIdx int64
+} 
+}
+namespace goim\\router {
+ class Session {
+  seq int32
+  servers map[int32]int32
+  rooms map[int32]map[int32]int32
+} 
+}
+namespace goim\\comet {
+ interface Operator  {
+  Operate(*proto.Proto)error
+  Connect(*proto.Proto)(string,int32,time.Duration,error)
+  Disconnect(string,int32)error
+} 
+}
+namespace goim\\libs\\crypto\\padding {
+ interface Padding  {
+  Padding(src []byte,blockSize int)[]byte
+  Unpadding(src []byte,blockSize int)([]byte,error)
+} 
+}
+namespace goim\\logic {
+ interface Auther  {
+  Auth(token string)(userId int64,roomId int32)
+} 
+}
+goim\\comet.Bucket ---> "*" goim\\comet.Channel : chs
+goim\\comet.Bucket ---> goim\\comet.BucketOptions : boptions
+goim\\comet.Bucket ---> "*" goim\\comet.Room : rooms
+goim\\comet.Channel ---> goim\\comet.Ring : CliProto
+goim\\comet.Channel ---> goim\\libs\\bufio.Writer : Writer
+goim\\comet.Channel ---> goim\\libs\\bufio.Reader : Reader
+goim\\comet.Channel ---> goim\\comet.Channel : Next
+goim\\comet.Channel ---> goim\\comet.Channel : Prev
+goim\\comet.Ring ---> "*" goim\\libs\\proto.Proto : data
+goim\\comet.Room ---> goim\\comet.Channel : next
+goim\\comet.Round ---> "*" goim\\libs\\bytes.Pool : readers
+goim\\comet.Round ---> "*" goim\\libs\\bytes.Pool : writers
+goim\\comet.Round ---> "*" goim\\libs\\time.Timer : timers
+goim\\comet.Round ---> goim\\comet.RoundOptions : options
+goim\\comet.Server ---> "*" goim\\comet.Bucket : Buckets
+goim\\comet.Server ---> goim\\comet.Round : round
+goim\\comet.Server ---> goim\\comet.ServerOptions : Options
+goim\\libs\\bytes.Buffer ---> goim\\libs\\bytes.Buffer : next
+goim\\libs\\bytes.Pool ---> goim\\libs\\bytes.Buffer : free
+goim\\libs\\net\\xrpc.Client ---> goim\\libs\\net\\xrpc.ClientOptions : options
+goim\\libs\\net\\xrpc.Clients ---> "*" goim\\libs\\net\\xrpc.Client : clients
+goim\\libs\\proto.PushMsgArg ---> goim\\libs\\proto.Proto : P
+goim\\libs\\proto.PushMsgsArg ---> "*" goim\\libs\\proto.PushMsgArg : PMArgs
+goim\\libs\\proto.MPushMsgArg ---> goim\\libs\\proto.Proto : P
+goim\\libs\\proto.MPushMsgsArg ---> "*" goim\\libs\\proto.PushMsgArg : PMArgs
+goim\\libs\\proto.BoardcastArg ---> goim\\libs\\proto.Proto : P
+goim\\libs\\proto.BoardcastRoomArg ---> goim\\libs\\proto.Proto : P
+goim\\libs\\proto.GetAllReply ---> "*" goim\\libs\\proto.GetReply : Sessions
+goim\\libs\\proto.MGetReply ---> "*" goim\\libs\\proto.GetReply : Sessions
+goim\\libs\\time.TimerData ---> goim\\libs\\time.TimerData : next
+goim\\libs\\time.Timer ---> goim\\libs\\time.TimerData : free
+goim\\libs\\time.Timer ---> "*" goim\\libs\\time.TimerData : timers
+goim\\logic\\job.Comet ---> goim\\libs\\net\\xrpc.Clients : rpcClient
+goim\\logic\\job.Comet ---> goim\\logic\\job.CometOptions : options
+goim\\logic\\job.RoomBucket ---> "*" goim\\logic\\job.Room : rooms
+goim\\logic\\job.RoomBucket ---> goim\\logic\\job.RoomOptions : options
+goim\\logic\\job.RoomBucket ---> goim\\logic\\job.Round : round
+goim\\logic\\job.Round ---> "*" goim\\libs\\time.Timer : timers
+goim\\logic\\job.Round ---> goim\\logic\\job.RoundOptions : options
+goim\\router.Bucket ---> "*" goim\\router.Session : sessions
+goim\\router.Bucket ---> goim\\router.Cleaner : cleaner
+goim\\router.CleanData ---> goim\\router.CleanData : next,prev
+goim\\router.Cleaner ---> goim\\router.CleanData : root
+goim\\router.Cleaner ---> "*" goim\\router.CleanData : maps
+goim\\router.RouterRPC ---> "*" goim\\router.Bucket : Buckets
+goim\\comet.Operator <|- goim\\comet.DefaultOperator
+goim\\libs\\crypto\\padding.Padding <|- goim\\libs\\crypto\\padding.pkcs5
+goim\\logic.Auther <|- goim\\logic.DefaultAuther
+@enduml

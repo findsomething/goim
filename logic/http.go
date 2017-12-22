@@ -17,12 +17,12 @@ func InitHTTP() (err error) {
 	var network, addr string
 	for i := 0; i < len(Conf.HTTPAddrs); i++ {
 		httpServeMux := http.NewServeMux()
-		httpServeMux.HandleFunc("/1/push", Push)
-		httpServeMux.HandleFunc("/1/pushs", Pushs)
-		httpServeMux.HandleFunc("/1/push/all", PushAll)
-		httpServeMux.HandleFunc("/1/push/room", PushRoom)
-		httpServeMux.HandleFunc("/1/server/del", DelServer)
-		httpServeMux.HandleFunc("/1/count", Count)
+		httpServeMux.HandleFunc("/v1/push", Push)
+		httpServeMux.HandleFunc("/v1/pushs", Pushs)
+		httpServeMux.HandleFunc("/v1/push/all", PushAll)
+		httpServeMux.HandleFunc("/v1/push/room", PushRoom)
+		httpServeMux.HandleFunc("/v1/server/del", DelServer)
+		httpServeMux.HandleFunc("/v1/count", Count)
 		log.Info("start http listen:\"%s\"", Conf.HTTPAddrs[i])
 		if network, addr, err = inet.ParseNetwork(Conf.HTTPAddrs[i]); err != nil {
 			log.Error("inet.ParseNetwork() error(%v)", err)

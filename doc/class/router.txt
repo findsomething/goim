@@ -1,0 +1,70 @@
+@startuml
+namespace goim\\router {
+ class Bucket {
+  bLock sync.RWMutex
+  server int
+  session int
+  sessions map[int64]*Session
+  roomCounter map[int32]int32
+  serverCounter map[int32]int32
+  userServerCounter map[int32]map[int64]int32
+  cleaner *Cleaner
+} 
+}
+namespace goim\\router {
+ class CleanData {
+  Key int64
+  expireTime time.Time
+  next,prev *CleanData
+} 
+}
+namespace goim\\router {
+ class Cleaner {
+  cLock sync.Mutex
+  size int
+  root CleanData
+  maps map[int64]*CleanData
+} 
+}
+namespace goim\\router {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  PprofAddrs []string
+  RPCAddrs []string
+  Bucket int
+  Server int
+  Cleaner int
+  BucketCleanPeriod time.Duration
+  Session int
+  SessionExpire time.Duration
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\router {
+ class Monitor {
+} 
+}
+namespace goim\\router {
+ class RouterRPC {
+  Buckets []*Bucket
+  BucketIdx int64
+} 
+}
+namespace goim\\router {
+ class Session {
+  seq int32
+  servers map[int32]int32
+  rooms map[int32]map[int32]int32
+} 
+}
+goim\\router.Bucket ---> "*" goim\\router.Session : sessions
+goim\\router.Bucket ---> goim\\router.Cleaner : cleaner
+goim\\router.CleanData ---> goim\\router.CleanData : next,prev
+goim\\router.Cleaner ---> goim\\router.CleanData : root
+goim\\router.Cleaner ---> "*" goim\\router.CleanData : maps
+goim\\router.RouterRPC ---> "*" goim\\router.Bucket : Buckets
+@enduml

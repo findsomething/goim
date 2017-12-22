@@ -1,0 +1,197 @@
+@startuml
+namespace goim\\comet {
+ class BucketOptions {
+  ChannelSize int
+  RoomSize int
+  RoutineAmount int64
+  RoutineSize int
+} 
+}
+namespace goim\\comet {
+ class Bucket {
+  cLock sync.RWMutex
+  chs map[string]*Channel
+  boptions BucketOptions
+  rooms map[int32]*Room
+  routines []chan *proto.BoardcastRoomArg
+  routinesNum uint64
+} 
+}
+namespace goim\\comet {
+ class Channel {
+  RoomId int32
+  CliProto Ring
+  signal chan *proto.Proto
+  Writer bufio.Writer
+  Reader bufio.Reader
+  Next *Channel
+  Prev *Channel
+} 
+}
+namespace goim\\comet\\client {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  CertFile string
+  TCPAddr string
+  WebsocketAddr string
+  Sndbuf int
+  Rcvbuf int
+  Type int
+  SubKey string
+} 
+}
+namespace goim\\comet\\client {
+ class Proto {
+  Ver int16
+  Operation int32
+  SeqId int32
+  Body json.RawMessage
+} 
+}
+namespace goim\\comet {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  PprofBind []string
+  StatBind []string
+  ServerId int32
+  Debug bool
+  Whitelist []string
+  WhiteLog string
+  TCPBind []string
+  TCPSndbuf int
+  TCPRcvbuf int
+  TCPKeepalive bool
+  TCPReader int
+  TCPReadBuf int
+  TCPReadBufSize int
+  TCPWriter int
+  TCPWriteBuf int
+  TCPWriteBufSize int
+  WebsocketBind []string
+  WebsocketTLSOpen bool
+  WebsocketTLSBind []string
+  WebsocketCertFile string
+  WebsocketPrivateFile string
+  FlashPolicyOpen bool
+  FlashPolicyBind []string
+  HandshakeTimeout time.Duration
+  WriteTimeout time.Duration
+  SvrProto int
+  CliProto int
+  Timer int
+  TimerSize int
+  Bucket int
+  BucketChannel int
+  BucketRoom int
+  RoutineAmount int64
+  RoutineSize int
+  RPCPushAddrs []string
+  LogicAddrs []string
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\comet {
+ class Monitor {
+} 
+}
+namespace goim\\comet {
+ class DefaultOperator {
+} 
+}
+namespace goim\\comet {
+ class Ring {
+  rp uint64
+  num uint64
+  mask uint64
+  wp uint64
+  data []proto.Proto
+} 
+}
+namespace goim\\comet {
+ class Room {
+  id int32
+  rLock sync.RWMutex
+  next *Channel
+  drop bool
+  Online int
+} 
+}
+namespace goim\\comet {
+ class RoundOptions {
+  Timer int
+  TimerSize int
+  Reader int
+  ReadBuf int
+  ReadBufSize int
+  Writer int
+  WriteBuf int
+  WriteBufSize int
+} 
+}
+namespace goim\\comet {
+ class Round {
+  readers []bytes.Pool
+  writers []bytes.Pool
+  timers []time.Timer
+  options RoundOptions
+  readerIdx int
+  writerIdx int
+  timerIdx int
+} 
+}
+namespace goim\\comet {
+ class PushRPC {
+} 
+}
+namespace goim\\comet {
+ class ServerOptions {
+  CliProto int
+  SvrProto int
+  HandshakeTimeout time.Duration
+  TCPKeepalive bool
+  TCPRcvbuf int
+  TCPSndbuf int
+} 
+}
+namespace goim\\comet {
+ class Server {
+  Buckets []*Bucket
+  bucketIdx uint32
+  round *Round
+  operator Operator
+  Options ServerOptions
+} 
+}
+namespace goim\\comet {
+ class Whitelist {
+  Log *log.Logger
+  list map[string]struct { }
+} 
+}
+namespace goim\\comet {
+ interface Operator  {
+  Operate(*proto.Proto)error
+  Connect(*proto.Proto)(string,int32,time.Duration,error)
+  Disconnect(string,int32)error
+} 
+}
+goim\\comet.Bucket ---> "*" goim\\comet.Channel : chs
+goim\\comet.Bucket ---> goim\\comet.BucketOptions : boptions
+goim\\comet.Bucket ---> "*" goim\\comet.Room : rooms
+goim\\comet.Channel ---> goim\\comet.Ring : CliProto
+goim\\comet.Channel ---> goim\\comet.Channel : Next
+goim\\comet.Channel ---> goim\\comet.Channel : Prev
+goim\\comet.Room ---> goim\\comet.Channel : next
+goim\\comet.Round ---> goim\\comet.RoundOptions : options
+goim\\comet.Server ---> "*" goim\\comet.Bucket : Buckets
+goim\\comet.Server ---> goim\\comet.Round : round
+goim\\comet.Server ---> goim\\comet.ServerOptions : Options
+goim\\comet.Operator <|- goim\\comet.DefaultOperator
+@enduml

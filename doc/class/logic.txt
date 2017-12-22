@@ -1,0 +1,145 @@
+@startuml
+namespace goim\\logic {
+ class DefaultAuther {
+} 
+}
+namespace goim\\logic {
+ class Config {
+  PidFile string
+  Dir string
+  Log string
+  MaxProc int
+  PprofAddrs []string
+  RPCAddrs []string
+  HTTPAddrs []string
+  HTTPReadTimeout time.Duration
+  HTTPWriteTimeout time.Duration
+  RouterRPCAddrs map[string]string
+  KafkaAddrs []string
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\logic {
+ class pushsBodyMsg {
+  Msg json.RawMessage
+  UserIds []int64
+} 
+}
+namespace goim\\logic {
+ class RoomCounter {
+  RoomId int32
+  Count int32
+} 
+}
+namespace goim\\logic {
+ class ServerCounter {
+  Server int32
+  Count int32
+} 
+}
+namespace goim\\logic\\job {
+ class CometOptions {
+  RoutineSize int64
+  RoutineChan int
+} 
+}
+namespace goim\\logic\\job {
+ class Comet {
+  serverId int32
+  rpcClient *xrpc.Clients
+  pushRoutines []chan *proto.MPushMsgArg
+  broadcastRoutines []chan *proto.BoardcastArg
+  roomRoutines []chan *proto.BoardcastRoomArg
+  pushRoutinesNum int64
+  roomRoutinesNum int64
+  broadcastRoutinesNum int64
+  options CometOptions
+} 
+}
+namespace goim\\logic\\job {
+ class Config {
+  Log string
+  ZKAddrs []string
+  ZKRoot string
+  KafkaTopic string
+  Comets map[int32]string
+  RoutineSize int64
+  RoutineChan int
+  PushChan int
+  PushChanSize int
+  Timer int
+  TimerSize int
+  RoomBatch int
+  RoomSignal time.Duration
+  MonitorOpen bool
+  MonitorAddrs []string
+} 
+}
+namespace goim\\logic\\job {
+ class Monitor {
+} 
+}
+namespace goim\\logic\\job {
+ class pushArg {
+  ServerId int32
+  SubKeys []string
+  Msg []byte
+  RoomId int32
+} 
+}
+namespace goim\\logic\\job {
+ class RoomBucket {
+  roomNum int
+  rooms map[int32]*Room
+  rwLock sync.RWMutex
+  options RoomOptions
+  round *Round
+} 
+}
+namespace goim\\logic\\job {
+ class RoomOptions {
+  BatchNum int
+  SignalTime time.Duration
+} 
+}
+namespace goim\\logic\\job {
+ class Room {
+  id int32
+  proto chan *proto.Proto
+} 
+}
+namespace goim\\logic\\job {
+ class RoundOptions {
+  Timer int
+  TimerSize int
+} 
+}
+namespace goim\\logic\\job {
+ class Round {
+  timers []time.Timer
+  options RoundOptions
+  timerIdx int
+} 
+}
+namespace goim\\logic {
+ class Monitor {
+} 
+}
+namespace goim\\logic {
+ class RPC {
+  auther Auther
+} 
+}
+namespace goim\\logic {
+ interface Auther  {
+  Auth(token string)(userId int64,roomId int32)
+} 
+}
+goim\\logic\\job.Comet ---> goim\\logic\\job.CometOptions : options
+goim\\logic\\job.RoomBucket ---> "*" goim\\logic\\job.Room : rooms
+goim\\logic\\job.RoomBucket ---> goim\\logic\\job.RoomOptions : options
+goim\\logic\\job.RoomBucket ---> goim\\logic\\job.Round : round
+goim\\logic\\job.Round ---> goim\\logic\\job.RoundOptions : options
+goim\\logic.Auther <|- goim\\logic.DefaultAuther
+@enduml
