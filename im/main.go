@@ -5,9 +5,9 @@ import (
 	"runtime"
 
 	log "github.com/thinkboy/log4go"
-	//"goim/libs/perf"
 	"fmt"
 	"goim/im/tool"
+	"goim/libs/perf"
 )
 
 var Conf *tool.Config
@@ -24,14 +24,14 @@ func main() {
 	defer log.Close()
 	log.Info("im[%s] start", Ver)
 
-	//perf.Init(Conf.PprofAddrs)
-	//// logic rpc
-	//if err := InitLogic(Conf.LogicRpcAddrs); err != nil {
-	//	log.Warn("logic rpc current can't connect, retry")
-	//}
-	//if Conf.MonitorOpen {
-	//	InitMonitor(Conf.MonitorAddrs)
-	//}
+	perf.Init(Conf.PprofAddrs)
+	// logic rpc
+	if err := InitLogic(Conf.LogicRpcAddrs); err != nil {
+		log.Warn("logic rpc current can't connect, retry")
+	}
+	if Conf.MonitorOpen {
+		InitMonitor(Conf.MonitorAddrs)
+	}
 
 	// im rpc
 	if err := InitRpc(Conf.RPCConf); err != nil {

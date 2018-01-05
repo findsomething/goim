@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	gconf *goconf.Config
-	Conf *Config
+	gconf    *goconf.Config
+	Conf     *Config
 	confFile string
 )
 
@@ -19,24 +19,24 @@ func init() {
 
 type Config struct {
 	// base section
-	PidFile          string `goconf:"base:pidfile"`
+	PidFile          string        `goconf:"base:pidfile"`
 	Dir              string        `goconf:"base:dir"`
 	Log              string        `goconf:"base:log"`
-	MaxProc          int `goconf:"base:maxproc"`
+	MaxProc          int           `goconf:"base:maxproc"`
 	PprofAddrs       []string      `goconf:"base:pprof.addrs:,"`
 	RPCAddrs         []string      `goconf:"base:rpc.addrs:,"`
 	HTTPAddrs        []string      `goconf:"base:http.addrs:,"`
 	HTTPReadTimeout  time.Duration `goconf:"base:http.read.timeout:time"`
 	HTTPWriteTimeout time.Duration `goconf:"base:http.write.timeout:time"`
 	// logic Rpc
-	LogicRpcAddrs    map[string]string `-`
+	LogicRpcAddrs map[string]string `-`
 	// kafka
-	KafkaAddrs       []string `goconf:"kafka:addrs"`
+	KafkaAddrs []string `goconf:"kafka:addrs"`
 	// monitor
-	MonitorOpen      bool `goconf:"monitor:open"`
-	MonitorAddrs     []string `goconf:"monitor:addrs:,"`
+	MonitorOpen  bool     `goconf:"monitor:open"`
+	MonitorAddrs []string `goconf:"monitor:addrs:,"`
 	// mysql
-	RPCConf          RpcConfig
+	RPCConf RpcConfig
 }
 
 type RpcConfig struct {
@@ -44,17 +44,19 @@ type RpcConfig struct {
 	MysqlName         string
 	MysqlMaxIdleConns int64
 	MysqlMaxOpenConns int64
+
+	SecretKey string
 }
 
 func NewConfig() *Config {
 	return &Config{
 		// base section
-		PidFile: "/tmp/goim-im.pid",
-		Dir: "./",
-		Log: "./im-log.xml",
-		MaxProc: runtime.NumCPU(),
-		PprofAddrs: []string{"local:7471"},
-		HTTPAddrs:      []string{"7472"},
+		PidFile:       "/tmp/goim-im.pid",
+		Dir:           "./",
+		Log:           "./im-log.xml",
+		MaxProc:       runtime.NumCPU(),
+		PprofAddrs:    []string{"local:7471"},
+		HTTPAddrs:     []string{"7472"},
 		LogicRpcAddrs: make(map[string]string),
 	}
 }
@@ -84,11 +86,13 @@ func InitConfig(configFile string) (*Config, error) {
 	mysqlAddr, _ := gconf.Get("mysql").String("addr")
 	mysqlMaxIdleConns, _ := gconf.Get("mysql").Int("maxIdleConns")
 	mysqlMaxOpenConns, _ := gconf.Get("mysql").Int("maxOpenConns")
+	secretKey, _ := gconf.Get("base").String("secret")
 	Conf.RPCConf = RpcConfig{
-		MysqlAddr:mysqlAddr,
-		MysqlName:mysqlName,
-		MysqlMaxIdleConns:mysqlMaxIdleConns,
-		MysqlMaxOpenConns:mysqlMaxOpenConns,
+		MysqlAddr:         mysqlAddr,
+		MysqlName:         mysqlName,
+		MysqlMaxIdleConns: mysqlMaxIdleConns,
+		MysqlMaxOpenConns: mysqlMaxOpenConns,
+		SecretKey:         secretKey,
 	}
 	return Conf, nil
 }

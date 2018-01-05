@@ -7,8 +7,11 @@ import (
 )
 
 type Conversationer interface {
-	Create(arg *proto.ConversationArg, replay *proto.ConversationReply) (err error)
-	Update(arg *proto.ConversationArg, replay *proto.ConversationReply) (err error)
+	Create(arg *proto.ConversationArg, reply *proto.ConversationReply) (err error)
+	Update(arg *proto.ConversationArg, reply *proto.ConversationReply) (err error)
+
+	CreateMember(arg *proto.ConversationMemberArg, reply *proto.ConversationMemberReply) (err error)
+	UpdateMember(arg *proto.ConversationMemberArg, reply *proto.ConversationMemberReply) (err error)
 }
 
 type DefaultConversationer struct {
@@ -19,7 +22,7 @@ func NewDefaultConversationer() *DefaultConversationer {
 	return &DefaultConversationer{}
 }
 
-func (c *DefaultConversationer) Create(arg *proto.ConversationArg, replay *proto.ConversationReply) (err error) {
+func (c *DefaultConversationer) Create(arg *proto.ConversationArg, reply *proto.ConversationReply) (err error) {
 	var (
 		id int64
 		conversation *models.Conversation
@@ -45,18 +48,18 @@ func (c *DefaultConversationer) Create(arg *proto.ConversationArg, replay *proto
 		return
 	}
 
-	replay.Id = conversation.Id
-	replay.Status = conversation.Status
-	replay.AccountId = conversation.AccountId
-	replay.Attr = conversation.Attr
-	replay.Name = conversation.Name
-	replay.No = conversation.No
-	replay.Type = conversation.Type
+	reply.Id = conversation.Id
+	reply.Status = conversation.Status
+	reply.AccountId = conversation.AccountId
+	reply.Attr = conversation.Attr
+	reply.Name = conversation.Name
+	reply.No = conversation.No
+	reply.Type = conversation.Type
 
 	return
 }
 
-func (c *DefaultConversationer) Update(arg *proto.ConversationArg, replay *proto.ConversationReply) (err error) {
+func (c *DefaultConversationer) Update(arg *proto.ConversationArg, reply *proto.ConversationReply) (err error) {
 	var (
 		id int64
 		conversation *models.Conversation
@@ -79,13 +82,84 @@ func (c *DefaultConversationer) Update(arg *proto.ConversationArg, replay *proto
 		return
 	}
 
-	replay.Id = conversation.Id
-	replay.AccountId = conversation.AccountId
-	replay.No = conversation.No
-	replay.Name = conversation.Name
-	replay.Type = conversation.Type
-	replay.Status = conversation.Status
-	replay.Attr = conversation.Attr
+	reply.Id = conversation.Id
+	reply.AccountId = conversation.AccountId
+	reply.No = conversation.No
+	reply.Name = conversation.Name
+	reply.Type = conversation.Type
+	reply.Status = conversation.Status
+	reply.Attr = conversation.Attr
+
+	return
+}
+
+func (c *DefaultConversationer) CreateMember(arg *proto.ConversationMemberArg, reply *proto.ConversationMemberReply) (err error) {
+	var (
+		id int64
+		conversationMember *models.ConversationMember
+	)
+
+	conversationMemberEntity := &business.ConversationMemberEntity{}
+	conversationMember = &models.ConversationMember{
+		AccountId:arg.AccountId,
+		ConvNo:arg.ConvNo,
+		ClientId:arg.ClientId,
+		ClientName:arg.ClientName,
+		Mute:arg.Mute,
+		Forbidden:arg.Forbidden,
+	}
+
+	if id, err = conversationMemberEntity.Create(conversationMember); err != nil {
+		return
+	}
+
+	if conversationMember, err = conversationMemberEntity.Get(id); err != nil {
+		return
+	}
+
+	reply.Id = id
+	reply.AccountId = conversationMember.AccountId
+	reply.ConvNo = conversationMember.ConvNo
+	reply.ClientId = conversationMember.ClientId
+	reply.ClientName = conversationMember.ClientName
+	reply.Mute = conversationMember.Mute
+	reply.Forbidden = conversationMember.Forbidden
+
+	return
+}
+
+func (c *DefaultConversationer) UpdateMember(arg *proto.ConversationMemberArg, reply *proto.ConversationMemberReply) (err error) {
+	var (
+		id int64
+		conversationMember *models.ConversationMember
+	)
+
+	conversationMemberEntity := &business.ConversationMemberEntity{}
+	conversationMember = &models.ConversationMember{
+		Id:arg.Id,
+		AccountId:arg.AccountId,
+		ConvNo:arg.ConvNo,
+		ClientId:arg.ClientId,
+		ClientName:arg.ClientName,
+		Mute:arg.Mute,
+		Forbidden:arg.Forbidden,
+	}
+
+	if id, err = conversationMemberEntity.Update(conversationMember, arg.Cols); err != nil {
+		return
+	}
+
+	if conversationMember, err = conversationMemberEntity.Get(id); err != nil {
+		return
+	}
+
+	reply.Id = conversationMember.Id
+	reply.AccountId = conversationMember.AccountId
+	reply.ConvNo = conversationMember.ConvNo
+	reply.ClientId = conversationMember.ClientId
+	reply.ClientName = conversationMember.ClientName
+	reply.Mute = conversationMember.Mute
+	reply.Forbidden = conversationMember.Forbidden
 
 	return
 }

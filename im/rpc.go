@@ -14,7 +14,7 @@ import (
 func InitRpc(rpcConf tool.RpcConfig) (err error) {
 	var (
 		network, addr string
-		c = &RPC{}
+		c             = &RPC{secretKey: rpcConf.SecretKey}
 	)
 	models.InitMysql(rpcConf)
 	rpc.Register(c)
@@ -46,22 +46,65 @@ func rpcListen(network, addr string) {
 }
 
 type RPC struct {
+	secretKey string
 }
 
-func (r *RPC) Ping(arg *proto.NoArg, replay *proto.NoReply) error {
+func (r *RPC) Ping(arg *proto.NoArg, reply *proto.NoReply) error {
 	return nil
 }
 
-func (r *RPC) CreateAccount(arg *proto.NoArg, replay *proto.AccountReply) (err error) {
+func (r *RPC) CreateAccount(arg *proto.NoArg, reply *proto.AccountReply) (err error) {
 	defaultAccounter := imrpc.NewDefaultAccounter()
-	err = defaultAccounter.Create(arg, replay)
+	err = defaultAccounter.Create(arg, reply)
 
 	return
 }
 
-func (r *RPC) UpdateAccount(arg *proto.AccountArg, replay *proto.AccountReply) (err error) {
+func (r *RPC) UpdateAccount(arg *proto.AccountArg, reply *proto.AccountReply) (err error) {
 	defaultAccounter := imrpc.NewDefaultAccounter()
-	err = defaultAccounter.Update(arg, replay)
+	err = defaultAccounter.Update(arg, reply)
+
+	return
+}
+
+func (r *RPC) CreateConversation(arg *proto.ConversationArg, reply *proto.ConversationReply) (err error) {
+	defaultConversationer := imrpc.NewDefaultConversationer()
+	err = defaultConversationer.Create(arg, reply)
+
+	return
+}
+
+func (r *RPC) UpdateConversation(arg *proto.ConversationArg, reply *proto.ConversationReply) (err error) {
+	defaultConversationer := imrpc.NewDefaultConversationer()
+	err = defaultConversationer.Update(arg, reply)
+
+	return
+}
+
+func (r *RPC) CreateConversationMember(arg *proto.ConversationMemberArg, reply *proto.ConversationMemberReply) (err error) {
+	defaultConversationer := imrpc.NewDefaultConversationer()
+	err = defaultConversationer.CreateMember(arg, reply)
+
+	return
+}
+
+func (r *RPC) UpdateConversationMember(arg *proto.ConversationMemberArg, reply *proto.ConversationMemberReply) (err error) {
+	defaultConversationer := imrpc.NewDefaultConversationer()
+	err = defaultConversationer.UpdateMember(arg, reply)
+
+	return
+}
+
+func (r *RPC) Token(arg *proto.TokenArg, reply proto.TokenReply) (err error) {
+	defaultDefaultAuther := imrpc.NewDefaultAuther(r.secretKey)
+	reply.Token = defaultDefaultAuther.CreateToken(arg.AccountId, arg.ClientId)
+
+	return
+}
+
+func (r *RPC) Verify(arg *proto.VerifyTokenArg, reply *proto.VerifyTokenReply) (err error) {
+	defaultDefaultAuther := imrpc.NewDefaultAuther(r.secretKey)
+	reply.UserId, reply.RoomId, err = defaultDefaultAuther.Auth(arg.Token)
 
 	return
 }

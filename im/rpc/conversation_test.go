@@ -38,3 +38,34 @@ func TestDefaultConversationer_Update(t *testing.T) {
 
 	tearDown()
 }
+
+func TestDefaultConversationer_UpdateMember(t *testing.T) {
+	tearDown := tests.SetUpTest(t)
+
+	defaultConversationer := NewDefaultConversationer()
+	arg := &proto.ConversationMemberArg{
+		AccountId:1,
+		ConvNo:"testConvNo",
+		ClientId:1,
+		ClientName:"testClientName",
+	}
+	replay := &proto.ConversationMemberReply{}
+
+	err := defaultConversationer.CreateMember(arg, replay)
+
+	assert.NoError(t, err)
+
+	arg = &proto.ConversationMemberArg{
+		Id: replay.Id,
+		ClientName:"testClientName1",
+		Cols:[]string{"ClientName"},
+	}
+	replay = &proto.ConversationMemberReply{}
+
+	err = defaultConversationer.UpdateMember(arg, replay)
+
+	assert.NoError(t, err)
+	assert.Equal(t, replay.ClientName, "testClientName1")
+
+	tearDown()
+}
